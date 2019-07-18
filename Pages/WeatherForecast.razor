@@ -1,0 +1,97 @@
+@page "/weatherforecast"
+@using PlayingWithBlazor.Data
+@using Newtonsoft.Json
+@using System.Linq
+@using System.IO
+@inject HttpClient httpClient
+
+
+<div class="form-group">
+  <label>Enter your OpenWeatherMap API KEY:</label>
+  <input type="text" class="form-control" @bind="@APIKey" />
+</div>
+<div class="form-group">
+  <label for="City">Location:</label>
+  <BlazoredTypeahead SearchMethod="@SearchCityNames"
+                   @bind-Value="@SelectedCity">
+    <SelectedTemplate>
+        @context.Name, @context.Country
+    </SelectedTemplate>
+    <ResultTemplate>
+        @context.Name, @context.Country
+    </ResultTemplate>
+</BlazoredTypeahead>
+</div>
+<div class="form-group">
+  <button class="btn btn-primary" @onclick="@GetForecast">Get forecast</button>
+</div>
+<hr />
+
+@if(DailyForecasts.Count > 0)
+{
+    <div>Weather Forecast of the next 5 days for the city of @SelectedCity.Name : </div>
+    <br /> 
+    @foreach (var day in DailyForecasts)
+    {
+        <p>Forecast for : @DateTimeOffset.FromUnixTimeSeconds(day[0].Dt).AddSeconds(forecast.City.Timezone).ToString("D")</p>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Local Time at @SelectedCity.Name</th>
+                    <th>Temp. (C)</th>
+                    <th>Summary</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var fc in day)
+                {
+                    <tr>
+                        <td>@DateTimeOffset.FromUnixTimeSeconds(fc.Dt).AddSeconds(forecast.City.Timezone).ToString("t")</td>
+                        <td>@fc.Main.Temp</td>
+                        <td>@fc.Weather[0].Description</td>
+                    </tr>
+                }
+            </tbody>
+        </table>  
+        <br /> 
+    }
+}
+
+@code 
+{
+    private string APIKey { get; set; } = "2ad0ee5277bd2278b8086676f6752f8e";
+    private double latitude { get; set; }
+    private double longitude { get; set; }
+    private OpenWeatherForecast forecast = null;
+    private List<List<Summary>> DailyForecasts = new List<List<Summary>>();
+    private List<City> CityList = new List<City>();
+    private City SelectedCity;
+
+    public async void GetForecast()
+    {
+        string url = $"http://api.openweathermap.org/data/2.5/forecast?id={SelectedCity.Id}&units=metric&APPID={APIKey}";
+        var responseJson = await httpClient.GetStringAsync(url);
+        forecast = JsonConvert.DeserializeObject<OpenWeatherForecast>(responseJson);
+        var initial_day = DateTimeOffset.FromUnixTimeSeconds(forecast.List[0].Dt).AddSeconds(forecast.City.Timezone);
+        DailyForecasts.Clear();
+        for (int i = 0; i < 5; i++)
+        {
+            var dailyForecast = forecast.List.Where( x => DateTimeOffset.FromUnixTimeSeconds(x.Dt).AddSeconds(forecast.City.Timezone).Day == initial_day.AddDays(i).Day)
+                                                    .ToList();
+            DailyForecasts.Add(dailyForecast);
+            this.StateHasChanged();
+        }
+    }
+
+    protected override void OnInit()
+    {
+        var json = File.ReadAllText("OpenWeatherMapData/city.list.json");
+        CityList = JsonConvert.DeserializeObject<List<City>>(json);
+    }
+
+    private async Task<List<City>> SearchCityNames(string searchText)
+    {
+        var res = await Task.FromResult(CityList.Where(x => x.Name.ToLower().StartsWith(searchText.ToLower())).ToList());
+        return res;
+    }
+}
