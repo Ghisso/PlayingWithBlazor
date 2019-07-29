@@ -36,6 +36,8 @@ namespace PlayingWithBlazor
             }
             services.AddPredictionEnginePool<MelbourneHousePricesInput, MelbourneHousePricesOutput>()
                 .FromFile("MLModels/MelbourneHousePrices.zip");
+
+            services.AddSingleton<OpenWeatherForecastData>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

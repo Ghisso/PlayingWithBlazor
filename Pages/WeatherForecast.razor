@@ -4,70 +4,83 @@
 @using System.Linq
 @using System.IO
 @inject HttpClient httpClient
+@inject OpenWeatherForecastData OpenWeatherForecastData
 
 
-<div class="form-group">
-  <label>Enter your OpenWeatherMap API KEY : </label>
-  <input type="text" class="form-control" @bind="@APIKey" />
-</div>
+<h1>Weather forecast</h1>
 
-<div class="form-group">
-  <label>Enter the City : </label>
-    <BlazoredTypeahead SearchMethod="@SearchCityNames"
-                   @bind-Value="@SelectedCity">
-        <SelectedTemplate>
-            @context.Name, @context.Country
-        </SelectedTemplate>
-        <ResultTemplate>
-            @context.Name, @context.Country
-        </ResultTemplate>
-    </BlazoredTypeahead>
-</div>
+<p>This component demonstrates fetching data from OpenWeather API.</p>
 
-<div class="form-group">
-  <label>Or enter the latitude and longitude (the city takes precedence) : </label>
-  <input type="text" class="form-control" @bind="@Latitude" placeholder="Latitude" />
-  <input type="text" class="form-control" @bind="@Longitude" placeholder="Longitude" />
-</div>
 
-<div class="form-group">
-  <button class="btn btn-primary" @onclick="@GetForecast">Get forecast</button>
-</div>
-<hr />
-
-@if(DailyForecasts.Count > 0)
+@if(CityList == null)
 {
-    <div>Weather Forecast of the next 5 days for the city of @SelectedCity.Name : </div>
-    <br /> 
-    @foreach (var day in DailyForecasts)
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="form-group">
+    <label>Enter your OpenWeatherMap API KEY : </label>
+    <input type="text" class="form-control" @bind="@APIKey" />
+    </div>
+
+    <div class="form-group">
+    <label>Enter the City : </label>
+        <BlazoredTypeahead SearchMethod="@SearchCityNames"
+                    @bind-Value="@SelectedCity">
+            <SelectedTemplate>
+                @context.Name, @context.Country
+            </SelectedTemplate>
+            <ResultTemplate>
+                @context.Name, @context.Country
+            </ResultTemplate>
+        </BlazoredTypeahead>
+    </div>
+
+    <div class="form-group">
+    <label>Or enter the latitude and longitude (the city takes precedence) : </label>
+    <input type="text" class="form-control" @bind="@Latitude" placeholder="Latitude" />
+    <input type="text" class="form-control" @bind="@Longitude" placeholder="Longitude" />
+    </div>
+
+    <div class="form-group">
+    <button class="btn btn-primary" @onclick="@GetForecast">Get forecast</button>
+    </div>
+    <hr />
+
+    @if(DailyForecasts.Count > 0)
     {
-        <p>Forecast for : @DateTimeOffset.FromUnixTimeSeconds(day[0].Dt).AddSeconds(forecast.City.Timezone).ToString("D")</p>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Local Time at @SelectedCity.Name</th>
-                    <th>Temp. (C)</th>
-                    <th>Summary</th>
-                    <th>Icon</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var fc in day)
-                {
-                    <tr>
-                        <td>@DateTimeOffset.FromUnixTimeSeconds(fc.Dt).AddSeconds(forecast.City.Timezone).ToString("t")</td>
-                        <td>@fc.Main.Temp</td>
-                        <td>@fc.Weather[0].Description</td>
-                        <td>
-                            @{var iconURL = $"http://openweathermap.org/img/wn/{@fc.Weather[0].Icon}@2x.png";
-                            <img src=@iconURL height=50 width=50>
-                            }
-                            </td>
-                    </tr>
-                }
-            </tbody>
-        </table>  
+        <div>Weather Forecast of the next 5 days for the city of @SelectedCity.Name : </div>
         <br /> 
+        @foreach (var day in DailyForecasts)
+        {
+            <p>Forecast for : @DateTimeOffset.FromUnixTimeSeconds(day[0].Dt).AddSeconds(forecast.City.Timezone).ToString("D")</p>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Local Time at @SelectedCity.Name</th>
+                        <th>Temp. (C)</th>
+                        <th>Summary</th>
+                        <th>Icon</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var fc in day)
+                    {
+                        <tr>
+                            <td>@DateTimeOffset.FromUnixTimeSeconds(fc.Dt).AddSeconds(forecast.City.Timezone).ToString("t")</td>
+                            <td>@fc.Main.Temp</td>
+                            <td>@fc.Weather[0].Description</td>
+                            <td>
+                                @{var iconURL = $"http://openweathermap.org/img/wn/{@fc.Weather[0].Icon}@2x.png";
+                                <img src=@iconURL height=50 width=50>
+                                }
+                                </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>  
+            <br /> 
+        }
     }
 }
 
@@ -78,7 +91,7 @@
     private double Longitude { get; set; }
     private OpenWeatherForecast forecast = null;
     private List<List<Summary>> DailyForecasts = new List<List<Summary>>();
-    private List<City> CityList = new List<City>();
+    private List<City> CityList;
     private City SelectedCity;
 
     private async void GetForecast()
@@ -97,10 +110,12 @@
         }
     }
 
-    protected override void OnInit()
+    protected override async Task OnInitAsync()
     {
-        var json = File.ReadAllText("Data/OpenWeatherMapData/city.list.json");
-        CityList = JsonConvert.DeserializeObject<List<City>>(json);
+        if(CityList == null)
+        {
+            CityList = await OpenWeatherForecastData.GetOpenWeatherCityList();
+        }
     }
 
     private async Task<List<City>> SearchCityNames(string searchText)

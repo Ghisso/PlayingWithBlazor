@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace PlayingWithBlazor.Models
 {
@@ -79,6 +82,15 @@ namespace PlayingWithBlazor.Models
     {
         public double Speed { get; set; }
         public double Deg { get; set; }
+    }
+
+    public class OpenWeatherForecastData
+    {
+        public async Task<List<City>> GetOpenWeatherCityList()
+        {
+            var json = await File.ReadAllTextAsync("Data/OpenWeatherMapData/city.list.json");
+            return JsonConvert.DeserializeObject<List<City>>(json);
+        }
     }
 
 }
