@@ -8,6 +8,7 @@ using System.Net.Http;
 using Microsoft.Extensions.ML;
 using PlayingWithBlazor.Validation;
 using PlayingWithBlazor.Models;
+using EmbeddedBlazorContent;
 
 namespace PlayingWithBlazor
 {
@@ -53,6 +54,8 @@ namespace PlayingWithBlazor
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.UseEmbeddedBlazorContent(typeof(MatBlazor.BaseMatComponent).Assembly);
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
