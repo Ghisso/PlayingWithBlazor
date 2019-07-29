@@ -1,16 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using PlayingWithBlazor.Data;
 using System.Net.Http;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ML;
+using PlayingWithBlazor.Validation;
+using PlayingWithBlazor.Models;
 
 namespace PlayingWithBlazor
 {
@@ -37,6 +34,8 @@ namespace PlayingWithBlazor
                     return new HttpClient();
                 });
             }
+            services.AddPredictionEnginePool<MelbourneHousePricesInput, MelbourneHousePricesOutput>()
+                .FromFile("MLModels/MelbourneHousePrices.zip");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,5 +1,5 @@
 @page "/weatherforecast"
-@using PlayingWithBlazor.Data
+@using PlayingWithBlazor.Models
 @using Newtonsoft.Json
 @using System.Linq
 @using System.IO
@@ -99,7 +99,7 @@
 
     protected override void OnInit()
     {
-        var json = File.ReadAllText("OpenWeatherMapData/city.list.json");
+        var json = File.ReadAllText("Data/OpenWeatherMapData/city.list.json");
         CityList = JsonConvert.DeserializeObject<List<City>>(json);
     }
 

@@ -1,3 +1,5 @@
 {
-    "csharpextensions.privateMemberPrefix": "_"
+    "csharpextensions.privateMemberPrefix": "_",
+    "appService.defaultWebAppToDeploy": "/subscriptions/1aea903a-22f9-4491-a211-5dcd3709bbdb/resourceGroups/appsvc_rg_windows_centralus/providers/Microsoft.Web/sites/playingwithblazor",
+    "appService.deploySubpath": "bin/Release/netcoreapp3.0/linux-x64/publish"
 }

@@ -1,0 +1,246 @@
+@page "/jobsalaryprediction"
+@using PlayingWithBlazor.Models
+@using Microsoft.Extensions.ML
+@inject PredictionEnginePool<MelbourneHousePricesInput, MelbourneHousePricesOutput> predictionPool
+
+<h1>Predict Job Salary</h1>
+
+<p>Using machine learning, you can predict a job salary from the following fields. Give it a try!</p>
+
+<hr />
+
+<EditForm Model="@Input" OnValidSubmit="@MakePrediction">
+    <FluentValidationValidator />
+
+    <div class="form-group row mb-1">
+        <label class="col-2 col-form-label" for="suburb">Suburb: </label>
+        <div class="col-10">
+            <InputSelect class="col-10" id="suburb" @bind-Value="@Input.Suburb">
+                <option value="">Select Suburb</option>
+                @{
+                    foreach(var suburb in MelbourneHousePricesDataset.Dataset.Select( x=> x.Suburb).Distinct().OrderBy( x => x))
+                    {
+                        <option value="@suburb">@suburb</option>
+                    }
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Input.Suburb)"/>
+        </div>
+    </div>
+
+
+    <div class="form-group row mb-1">
+        <label class="col-2 col-form-label" for="Address">Address: </label>
+        <div class="col-10">
+            <InputText id="address" @bind-Value="@Input.Address" />
+            <ValidationMessage For="@(() => Input.Address)"/>
+        </div>
+    </div>
+
+
+    <div class="form-group row mb-1">
+        <label class="col-2 col-form-label" for="rooms">Rooms: </label>
+        <div class="col-10">
+            <InputNumber id="rooms" @bind-Value="@Input.Rooms" />
+            <ValidationMessage For="@(() => Input.Rooms)"/>
+        </div>
+    </div>
+
+
+    <div class="form-group row mb-1">
+        <label class="col-2 col-form-label" for="type">Type: </label>
+        <div class="col-10">
+            <InputSelect class="col-10" id="type" @bind-Value="@Input.Type">
+                <option></option>
+                @{
+                    foreach(var type in MelbourneHousePricesDataset.Dataset.Select( x=> x.Type).Distinct().OrderBy( x => x))
+                    {
+                        <option value="@type">@type</option>
+                    }
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Input.Type)"/>
+        </div>
+    </div>
+
+
+    <div class="form-group row mb-1">
+        <label class="col-2 col-form-label" for="method">Method: </label>
+        <div class="col-10">
+            <InputSelect id="method" @bind-Value="@Input.Method">
+                <option></option>
+                @{
+                    foreach(var method in MelbourneHousePricesDataset.Dataset.Select( x=> x.Method).Distinct().OrderBy( x => x))
+                    {
+                        <option value="@method">@method</option>
+                    }
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Input.Method)"/>
+        </div>
+    </div>
+
+
+    <div class="form-group row mb-1">
+        <label class="col-2 col-form-label" for="seller">Seller: </label>
+        <div class="col-10">
+            <InputText id="seller" @bind-Value="@Input.SellerG" />
+            <ValidationMessage For="@(() => Input.SellerG)"/>
+        </div>
+    </div>
+
+
+    <div class="form-group row mb-1">
+        <label class="col-2 col-form-label" for="date">Date: </label>
+        <div class="col-10">
+            <InputDate id="date" @bind-Value="@Input.Date" />
+            <ValidationMessage For="@(() => Input.Date)"/>
+        </div>
+    </div>
+
+
+    <div class="form-group row mb-1">
+        <label class="col-2 col-form-label" for="distance">Distance: </label>
+        <div class="col-10">
+            <InputNumber id="distance" @bind-Value="@Input.Distance" />
+            <ValidationMessage For="@(() => Input.Distance)"/>
+        </div>
+    </div>
+
+
+    <div class="form-group row mb-1">
+        <label class="col-2 col-form-label" for="postcode">Postcode: </label>
+        <div class="col-10">
+            <InputNumber id="postcode" @bind-Value="@Input.Postcode" />
+            <ValidationMessage For="@(() => Input.Postcode)"/>
+        </div>
+    </div>
+
+
+    <div class="form-group row mb-1">
+        <label class="col-2 col-form-label" for="bedrooms">Number of bedrooms: </label>
+        <div class="col-10">
+            <InputNumber id="bedrooms" @bind-Value="@Input.Bedroom2" />
+            <ValidationMessage For="@(() => Input.Bedroom2)"/>
+        </div>
+    </div>
+
+
+    <div class="form-group row mb-1">
+        <label class="col-2 col-form-label" for="bathrooms">Number of bathrooms: </label>
+        <div class="col-10">
+            <InputNumber id="bathrooms" @bind-Value="@Input.Bathroom" />
+            <ValidationMessage For="@(() => Input.Bathroom)"/>
+        </div>
+    </div>
+
+
+    <div class="form-group row mb-1">
+        <label class="col-2 col-form-label" for="car">Number of car spots: </label>
+        <div class="col-10">
+            <InputNumber id="car" @bind-Value="@Input.Car" />
+            <ValidationMessage For="@(() => Input.Car)"/>
+        </div>
+    </div>
+
+
+    <div class="form-group row mb-1">
+        <label class="col-2 col-form-label" for="landsize">Land area: </label>
+        <div class="col-10">
+            <InputNumber id="landsize" @bind-Value="@Input.Landsize" />
+            <ValidationMessage For="@(() => Input.Landsize)"/>
+        </div>
+    </div>
+
+
+    <div class="form-group row mb-1">
+        <label class="col-2 col-form-label" for="buildingarea">BuildingArea: </label>
+        <div class="col-10">
+            <InputSelect id="buildingarea" @bind-Value="@Input.BuildingArea">
+                <option></option>
+                @{
+                    foreach(var area in MelbourneHousePricesDataset.Dataset.Select( x=> x.BuildingArea).Distinct().OrderBy( x => x))
+                    {
+                        <option value="@area">@area</option>
+                    }
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Input.BuildingArea)"/>
+        </div>
+    </div>
+
+
+    <div class="form-group row mb-1">
+        <label class="col-2 col-form-label" for="yearbuilt">Year Built: </label>
+        <div class="col-10">
+            <InputNumber id="yearbuilt" @bind-Value="@Input.YearBuilt" />
+            <ValidationMessage For="@(() => Input.YearBuilt)"/>
+        </div>
+    </div>
+
+
+    <div class="form-group row mb-1">
+        <label class="col-2 col-form-label" for="councilarea">Council Area: </label>
+        <div class="col-10">
+            <InputSelect id="councilarea" @bind-Value="@Input.CouncilArea">
+                <option></option>
+                @{
+                    foreach(var area in MelbourneHousePricesDataset.Dataset.Select( x=> x.CouncilArea).Distinct().OrderBy( x => x))
+                    {
+                        <option value="@area">@area</option>
+                    }
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Input.CouncilArea)"/>
+        </div>
+    </div>
+
+
+    <div class="form-group row mb-1">
+        <label class="col-2 col-form-label" for="regionname">Region Name: </label>
+        <div class="col-10">
+            <InputSelect id="regionname" @bind-Value="@Input.Regionname">
+                <option></option>
+                @{
+                    foreach(var area in MelbourneHousePricesDataset.Dataset.Select( x=> x.Regionname).Distinct().OrderBy( x => x))
+                    {
+                        <option value="@area">@area</option>
+                    }
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Input.Regionname)"/>
+        </div>
+    </div>
+
+
+    <div class="form-group row mb-1">
+        <label class="col-2 col-form-label" for="propertycount">Property Count: </label>
+        <div class="col-10">
+            <InputNumber id="propertycount" @bind-Value="@Input.Propertycount" />
+            <ValidationMessage For="@(() => Input.Propertycount)"/>
+        </div>
+    </div>
+
+
+    <button type="submit">Predict price</button>
+
+</EditForm>
+<br />
+<br />
+@if(@Output != null)
+{
+    <p>The estimated price of this house is @Output.Score AUD.</p>
+}
+
+@code
+{
+    private MelbourneHousePricesInput Input { get; set; } = new MelbourneHousePricesInput();
+    private MelbourneHousePricesOutput Output { get; set; }
+
+    private void MakePrediction()
+    {
+        Output = predictionPool.Predict(Input);
+        Input.Price = Output.Score;
+        this.StateHasChanged();
+    }
+}

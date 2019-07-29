@@ -1,11 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <LangVersion>7.3</LangVersion>
+    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Blazored.FluentValidation" Version="1.1.0" />
     <PackageReference Include="GoogleMaps.LocationServices" Version="1.2.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="Blazored.Typeahead" Version="3.1.0" />
+    <PackageReference Include="Microsoft.ML" Version="1.2.0" />
+    <PackageReference Include="Microsoft.Extensions.ML" Version="0.14.0" />
+    <PackageReference Include="FluentValidation" Version="8.5.0-preview3" />
+    <PackageReference Include="Microsoft.ML.FastTree" Version="1.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="MLModels\MelbourneHousePrices.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>
