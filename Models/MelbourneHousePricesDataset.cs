@@ -1,22 +1,21 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace PlayingWithBlazor.Models
 {
-    public static class MelbourneHousePricesDataset
+    public class MelbourneHousePricesDataset
     {
-        public static List<MelbourneHousePricesInput> Dataset { get; set; } = new List<MelbourneHousePricesInput>();
-
-        static MelbourneHousePricesDataset()
+        public async Task<List<MelbourneHousePricesInput>> GetDataset()
         {
             var settings = new JsonSerializerSettings
                     {
                         NullValueHandling = NullValueHandling.Ignore,
                         MissingMemberHandling = MissingMemberHandling.Ignore
                     };
-            Dataset = JsonConvert.DeserializeObject<List<MelbourneHousePricesInput>>
-                        (File.ReadAllText("Data/MelbourneHousePrices/prices.json"), settings);
+            return JsonConvert.DeserializeObject<List<MelbourneHousePricesInput>>
+                        (await File.ReadAllTextAsync("Data/MelbourneHousePrices/prices.json"), settings);
         }
     }
 }
