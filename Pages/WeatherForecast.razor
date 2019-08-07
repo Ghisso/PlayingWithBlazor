@@ -47,11 +47,22 @@ else
     </div>
     <hr />
 
-    @if(DailyForecasts.Count > 0)
+    @if(isQuerying)
     {
-        <div>Weather Forecast of the next 5 days for the city of @SelectedCity.Name : </div>
+        <MatProgressBar Indeterminate="true"></MatProgressBar>
+    }
+    else if(DailyForecasts.Count > 0)
+    {
+        <div>Weather Forecast of the next <select @bind="@DaysSelectValue">
+                                            @{for (int i = 1; i < 6; i++)
+                                            {
+                                                <option value="@i" selected>@i</option>
+                                            }}
+                                        </select>
+            day(s) for the city of @SelectedCity.Name : 
+        </div>
         <br /> 
-        @foreach (var day in DailyForecasts)
+        @foreach (var day in DailyForecasts.Take(numberOfDays))
         {
             <p>Forecast for : @DateTimeOffset.FromUnixTimeSeconds(day[0].Dt).AddSeconds(forecast.City.Timezone).ToString("D")</p>
             <table class="table">
@@ -86,16 +97,21 @@ else
 
 @code 
 {
-    private string APIKey { get; set; } = "2ad0ee5277bd2278b8086676f6752f8e";
-    private double Latitude { get; set; }
-    private double Longitude { get; set; }
-    private OpenWeatherForecast forecast = null;
-    private List<List<Summary>> DailyForecasts = new List<List<Summary>>();
-    private List<City> CityList;
-    private City SelectedCity;
+    protected string APIKey { get; set; } = "2ad0ee5277bd2278b8086676f6752f8e";
+    protected double Latitude { get; set; }
+    protected double Longitude { get; set; }
+    protected OpenWeatherForecast forecast = null;
+    protected List<List<Summary>> DailyForecasts = new List<List<Summary>>();
+    protected List<City> CityList;
+    protected City SelectedCity;
+    protected string DaysSelectValue { get => numberOfDays.ToString(); set => int.TryParse(value, out numberOfDays);}
+    protected int numberOfDays = 5;
+    protected bool isQuerying = false;
 
-    private async void GetForecast()
+
+    protected async void GetForecast()
     {
+        isQuerying = true;
         string url = $"http://api.openweathermap.org/data/2.5/forecast?id={SelectedCity.Id}&units=metric&APPID={APIKey}";
         var responseJson = await httpClient.GetStringAsync(url);
         forecast = JsonConvert.DeserializeObject<OpenWeatherForecast>(responseJson);
@@ -106,8 +122,9 @@ else
             var dailyForecast = forecast.List.Where( x => DateTimeOffset.FromUnixTimeSeconds(x.Dt).AddSeconds(forecast.City.Timezone).Day == initial_day.AddDays(i).Day)
                                                     .ToList();
             DailyForecasts.Add(dailyForecast);
-            this.StateHasChanged();
         }
+        isQuerying = false;
+        StateHasChanged();
     }
 
     protected override async Task OnInitAsync()
@@ -118,9 +135,10 @@ else
         }
     }
 
-    private async Task<List<City>> SearchCityNames(string searchText)
+    protected async Task<List<City>> SearchCityNames(string searchText)
     {
         var res = await Task.FromResult(CityList.Where(x => x.Name.ToLower().StartsWith(searchText.ToLower())).ToList());
         return res;
     }
+
 }
