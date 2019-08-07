@@ -33,17 +33,20 @@ else
             <ResultTemplate>
                 @context.Name, @context.Country
             </ResultTemplate>
+            <NotFoundTemplate>
+                Sorry, the entered city hasn't been found.
+            </NotFoundTemplate>
         </BlazoredTypeahead>
     </div>
 
     <div class="form-group">
-    <label>Or enter the latitude and longitude (the city takes precedence) : </label>
-    <input type="text" class="form-control" @bind="@Latitude" placeholder="Latitude" />
-    <input type="text" class="form-control" @bind="@Longitude" placeholder="Longitude" />
+        <label>Or enter the latitude and longitude (the city takes precedence) : </label>
+        <input type="text" class="form-control" @bind="@Latitude" placeholder="Latitude" />
+        <input type="text" class="form-control" @bind="@Longitude" placeholder="Longitude" />
     </div>
 
     <div class="form-group">
-    <button class="btn btn-primary" @onclick="@GetForecast">Get forecast</button>
+        <button class="btn btn-primary" @onclick="@GetForecast">Get forecast</button>
     </div>
     <hr />
 
