@@ -40,12 +40,6 @@ else
     </div>
 
     <div class="form-group">
-        <label>Or enter the latitude and longitude (the city takes precedence) : </label>
-        <input type="text" class="form-control" @bind="@Latitude" placeholder="Latitude" />
-        <input type="text" class="form-control" @bind="@Longitude" placeholder="Longitude" />
-    </div>
-
-    <div class="form-group">
         <button class="btn btn-primary" @onclick="@GetForecast">Get forecast</button>
     </div>
     <hr />
@@ -101,8 +95,6 @@ else
 @code 
 {
     protected string APIKey { get; set; } = "2ad0ee5277bd2278b8086676f6752f8e";
-    protected double Latitude { get; set; }
-    protected double Longitude { get; set; }
     protected OpenWeatherForecast forecast = null;
     protected List<List<Summary>> DailyForecasts = new List<List<Summary>>();
     protected List<City> CityList;
