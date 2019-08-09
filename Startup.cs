@@ -9,6 +9,7 @@ using Microsoft.Extensions.ML;
 using PlayingWithBlazor.Validation;
 using PlayingWithBlazor.Models;
 using EmbeddedBlazorContent;
+using Blazor.FileReader;
 
 namespace PlayingWithBlazor
 {
@@ -40,6 +41,7 @@ namespace PlayingWithBlazor
 
             services.AddSingleton<OpenWeatherForecastData>();
             services.AddSingleton<UniqloStockDataset>();
+            services.AddFileReaderService(options => options.InitializeOnFirstCall = true);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
