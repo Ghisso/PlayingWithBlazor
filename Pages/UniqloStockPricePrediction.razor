@@ -1,0 +1,82 @@
+@page "/uniqloprediction"
+@using PlayingWithBlazor.Models
+@using Microsoft.Extensions.ML
+@inject PredictionEnginePool<UniqloStockInput, UniqloStockOutput> predictionPool
+@inject UniqloStockDataset UniqloStockDataset
+
+<h1>Predict Job Salary</h1>
+
+<p>Using machine learning, you can predict the stock price of Uniqlo. Give it a try!</p>
+Prices are in USD and must be inputted as a single integer with an additional 0.
+For instance, 54.98 must be inputted as 54980.
+Volume number must also have 2 extra 0s atatched, for instance 7400 becomes 740000.
+<hr />
+
+@if(Dataset == null)
+{
+    <p>The data is pretty large so it takes a little while to load ...</p>
+    <MatProgressBar Indeterminate="true"></MatProgressBar>
+}
+else
+{
+    <EditForm Model="@Input" OnValidSubmit="@MakePrediction">
+        <DataAnnotationsValidator />
+
+        <div class="form-group">
+            <label for="Date">Date: </label>
+            <InputDate Id="Date" min="2017-01-01" @bind-Value="DateValue" />
+        </div>
+
+        <div class="form-group">
+            <label for="Open">Open: </label>
+            <InputNumber id="Open" @bind-Value="Input.Open" />
+        </div>
+
+        <div class="form-group">
+            <label for="Low">Low: </label>
+            <InputNumber id="Low" @bind-Value="Input.Low" />
+        </div>
+
+        <div class="form-group">
+            <label for="High">High: </label>
+            <InputNumber id="High" @bind-Value="Input.High" />
+        </div>
+
+        <div class="form-group">
+            <label for="Volume">Volume: </label>
+            <InputNumber id="Volume" @bind-Value="Input.Volume" />
+        </div>
+
+
+        <button type="submit">Predict stock price</button>
+
+    </EditForm>
+    <br />
+    <br />
+    @if(@Output != null)
+    {
+        <p>The estimated Close price of the Uniqlo stock is @Output.Score.</p>
+    }
+}
+
+@code
+{
+    private UniqloStockInput Input { get; set; } = new UniqloStockInput();
+    private UniqloStockOutput Output { get; set; }
+    private List<UniqloStockInput> Dataset;
+    protected DateTime _dateValue;
+    protected DateTime DateValue { get { return _dateValue;} set { _dateValue = value; Input.Day = value.Day; Input.Month = value.Month; Input.Year = value.Year;}}
+
+    protected override async Task OnInitAsync()
+    {
+        Dataset = await UniqloStockDataset.GetDataset();
+    }
+
+    private void MakePrediction()
+    {
+        Output = predictionPool.Predict(Input);
+        Input.Close = Output.Score;
+        Output.Score = Output.Score/1000;
+        this.StateHasChanged();
+    }
+}

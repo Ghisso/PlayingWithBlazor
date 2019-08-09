@@ -35,11 +35,11 @@ namespace PlayingWithBlazor
                     return new HttpClient();
                 });
             }
-            services.AddPredictionEnginePool<MelbourneHousePricesInput, MelbourneHousePricesOutput>()
-                .FromFile("MLModels/MelbourneHousePrices.zip");
+            services.AddPredictionEnginePool<UniqloStockInput, UniqloStockOutput>()
+                .FromFile("MLModels/Uniqlo.zip");
 
             services.AddSingleton<OpenWeatherForecastData>();
-            services.AddSingleton<MelbourneHousePricesDataset>();
+            services.AddSingleton<UniqloStockDataset>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,0 +1,59 @@
+@page "/uniqlodataset"
+@using PlayingWithBlazor.Models
+@inject UniqloStockDataset UniqloStockDataset
+
+<h1>Uniqlo Stock Price</h1>
+
+@if(Dataset == null)
+{
+    <p>The data is pretty large so it takes a little while to load ...</p>
+    <MatProgressBar Indeterminate="true"></MatProgressBar>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Day</th>
+                <th>Month</th>
+                <th>Year</th>
+                <th>Open</th>
+                <th>Low</th>
+                <th>High</th>
+                <th>Close</th>
+                <th>Volume</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Dataset)
+            {
+                <tr>
+                    <td>@row.Day</td>
+                    <td>@row.Month</td>
+                    <td>@row.Year</td>
+                    <td>@row.Open</td>
+                    <td>@row.Low</td>
+                    <td>@row.High</td>
+                    <td>@row.Close</td>
+                    <td>@row.Volume</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code
+{
+    private List<UniqloStockInput> Dataset;
+
+    protected override async Task OnInitAsync()
+    {
+        if(Dataset == null)
+        {
+            Dataset = await UniqloStockDataset.GetDataset();
+            Dataset = Dataset.OrderBy( x => x.Year).ThenBy( x => x.Month).ThenBy( x => x.Day).ToList();
+        }
+    }
+}
