@@ -67,7 +67,7 @@ else
     protected DateTime _dateValue;
     protected DateTime DateValue { get { return _dateValue;} set { _dateValue = value; Input.Day = value.Day; Input.Month = value.Month; Input.Year = value.Year;}}
 
-    protected override async Task OnInitAsync()
+    protected override async Task OnInitializedAsync()
     {
         Dataset = await UniqloStockDataset.GetDataset();
     }

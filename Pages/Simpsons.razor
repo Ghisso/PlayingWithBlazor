@@ -1,57 +1,75 @@
 @page "/simpsons"
 @using PlayingWithBlazor.Models
-@using System.IO;
-@using Blazor.FileReader;
+@using System.IO
+@using Blazor.FileReader
+@using Microsoft.ML
+@using Microsoft.ML.Data
+@using Microsoft.ML.Data.IO
+@using Microsoft.ML.Trainers
+@using Microsoft.ML.Transforms.Image
 @inject IFileReaderService fileReaderService;
 
-<input type="file" @ref="@inputElement" />
-<button @onclick="@ReadFile" class="btn btn-primary">Read file</button>
-<button @onclick="@ClearFile" class="btn btn-primary">Clear</button>
 
-<br /><br />
-<textarea style="max-width: 100%;" cols="50" rows="20">@Output</textarea>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-6">
+            <input type="file" />
+            <button @onclick="ReadFile" class="btn btn-primary">Read file</button>
+            <button @onclick="ClearFile" class="btn btn-primary">Clear</button>
+            <br /><br />
+            <textarea style="max-width: 100%;" cols="50" rows="20">@Output</textarea>
+        </div>
+        <div class="col-6">
+            <img src="@imgData">
+        </div>
+    </div>
+</div>
+
 @code {
-    ElementRef inputElement;
+    protected ElementReference input;
+    protected string Output { get; set; } = string.Empty;
+    protected string imgData { get; set; } = string.Empty;
+    protected MLContext mlContext = new MLContext();
 
-    string Output { get; set; }
-
-    public async Task ClearFile()
+    protected async Task ClearFile()
     {
-        await fileReaderService.CreateReference(inputElement).ClearValue();
+        await fileReaderService.CreateReference(input).ClearValue();
+        imgData = string.Empty;
+        Output = string.Empty;
     }
 
-    public async Task ReadFile()
+    protected async Task ReadFile()
     {
         Output = string.Empty;
         this.StateHasChanged();
         var nl = Environment.NewLine;
-        foreach (var file in await fileReaderService.CreateReference(inputElement).EnumerateFilesAsync())
+        IEnumerable<IFileReference> files;
+        IFileReference file;
+        try
         {
-            var fileInfo = await file.ReadFileInfoAsync();
-            Output += $"{nameof(IFileInfo)}.{nameof(fileInfo.Name)}: {fileInfo.Name}{nl}";
-            Output += $"{nameof(IFileInfo)}.{nameof(fileInfo.Size)}: {fileInfo.Size}{nl}";
-            Output += $"{nameof(IFileInfo)}.{nameof(fileInfo.Type)}: {fileInfo.Type}{nl}";
-            Output += $"{nameof(IFileInfo)}.{nameof(fileInfo.LastModifiedDate)}: {fileInfo.LastModifiedDate?.ToString() ?? "(N/A)"}{nl}";
-            Output += $"Reading file...";
-            this.StateHasChanged();
-
-            var dest = new FileStream($"Data/Files/{fileInfo.Name}", FileMode.CreateNew);
-
-            using (var fs = await file.OpenReadAsync())
-            {
-                var bufferSize = 4096;
-                var buffer = new byte[bufferSize];
-                int count;
-                while ((count = await fs.ReadAsync(buffer, 0, buffer.Length)) != 0)
-                {
-                    Output += $"Read {count} bytes. {fs.Position} / {fs.Length}{nl}";
-                    dest.Write(buffer, 0, buffer.Length);
-                    this.StateHasChanged();
-                }
-                Output += $"Done reading file {fileInfo.Name}{nl}.";
-            }
-            this.StateHasChanged();
+            files = await fileReaderService.CreateReference(input).EnumerateFilesAsync();
+            file = files.First();
+        }
+        catch (System.Exception)
+        {
+            return;
         }
 
+        var fileInfo = await file.ReadFileInfoAsync();
+        Output += $"{nameof(IFileInfo)}.{nameof(fileInfo.Name)}: {fileInfo.Name}{nl}";
+        Output += $"{nameof(IFileInfo)}.{nameof(fileInfo.Size)}: {fileInfo.Size}{nl}";
+        Output += $"{nameof(IFileInfo)}.{nameof(fileInfo.Type)}: {fileInfo.Type}{nl}";
+        Output += $"{nameof(IFileInfo)}.{nameof(fileInfo.LastModifiedDate)}: {fileInfo.LastModifiedDate?.ToString() ?? "(N/A)"}{nl}";
+        this.StateHasChanged();
+
+        
+        using (var dest = new FileStream($"Data/Files/{fileInfo.Name}", FileMode.Create))
+        using (MemoryStream memoryStream = await file.CreateMemoryStreamAsync())
+        {
+            await memoryStream.CopyToAsync(dest);
+            imgData = $"data:image/{fileInfo.Type};base64," + Convert.ToBase64String(memoryStream.ToArray());
+        }
+        this.StateHasChanged();
     }
+
 }
